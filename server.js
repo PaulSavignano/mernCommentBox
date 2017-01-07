@@ -13,6 +13,7 @@ const router = express.Router();
 
 // Set port
 const port = process.env.API_PORT || 3001;
+mongoose.Promise = global.Promise;
 mongoose.connect(config.dbUri);
 
 // Configure API to use body-parser
@@ -50,7 +51,6 @@ router.route('/comments')
     comment.text = req.body.text;
     comment.save(function(err) {
       if (err) {
-        console.log(err);
         res.send(err);
       } else {
         res.json({ message: 'Comment successfully added!' });
@@ -60,19 +60,17 @@ router.route('/comments')
 
 router.route('/comments/:comment_id')
   .put(function(req, res) {
-    Comment.findById(req.params.comment_id, function(err, comment) {
+    Comment.findById({ _id: req.params.comment_id }, function(err, comment) {
       if (err) {
         res.send(err);
-      } else {
-        (req.body.author) ? comment.author = req.body.author : null;
-        (req.body.text) ? comment.text = req.body.text : null;
       }
+      (req.body.author) ? comment.author = req.body.author : null;
+      (req.body.text) ? comment.text = req.body.text : null;
       comment.save(function(err) {
         if (err) {
           res.send(err);
-        } else {
-          res.json({ message: 'Comment has been updated' });
         }
+        res.json({ message: 'Comment has been updated' });
       });
     });
   })
